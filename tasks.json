@@ -1,0 +1,49 @@
+[
+  {
+    "title": "Degistirilmis gorev",
+    "assignedTo": "Mine",
+    "id": 2,
+    "desc": "bu gorev degistirildi",
+    "asdfa": "bu ne"
+  },
+  {
+    "title": "task 3",
+    "assignedTo": "hakan",
+    "id": 3
+  },
+  {
+    "title": "task 4",
+    "assignedTo": "hakan",
+    "id": 4
+  },
+  {
+    "id": 5,
+    "title": "New Task",
+    "description": "This is a new task.",
+    "assignedTo": "John Doe",
+    "status": "in-progress",
+    "startDate": "2025-04-04",
+    "endDate": "2025-04-05"
+  },
+  {
+    "id": 6,
+    "title": "New Task2",
+    "description": "This is a new task.",
+    "assignedTo": "John Doe",
+    "status": "in-progress",
+    "startDate": "2025-04-04",
+    "endDate": "2025-04-05"
+  },
+  {
+    "title": "zzz",
+    "description": "asödfnösdfknö",
+    "assignedTo": "hakan",
+    "status": "pending",
+    "startDate": "2025-04-04",
+    "endDate": "2025-04-04",
+    "id": 7
+  },
+  {
+    "name": "hakan"
+  }
+]
