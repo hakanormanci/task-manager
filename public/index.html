@@ -2,26 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Task Manager</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      text-align: center;
+      padding: 50px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #333;
+    }
+    p {
+      font-size: 1.2rem;
+      color: #666;
+      margin-bottom: 40px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      margin: 10px;
+      font-size: 1rem;
+      color: white;
+      background-color: #007bff;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Add New Task</h1>
-    <form id="taskForm">
-      <input type="text" id="title" placeholder="Task Title" required />
-      <textarea id="description" placeholder="Description" rows="3" required></textarea>
-      <label for="assignedTo">Assign to:</label>
-      <select id="assignedTo" name="assignedTo">
-        <option value="">Loading...</option>
-      </select>
-      <input type="date" id="startDate" required />
-      <input type="date" id="endDate" required />
-      <button type="submit">Add Task</button>
-    </form>
-  </div>
+  <h1>Welcome to Task Manager</h1>
+  <p>Manage your tasks efficiently, assign them to your team, and stay organized.</p>
 
-  <script src="script.js"></script>
+  <a href="/login.html" class="btn">Login</a>
+  <a href="/tasks.html" class="btn">Go to Tasks</a>
 </body>
 </html>

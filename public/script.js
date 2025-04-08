@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const taskData = {
             title: document.getElementById("title").value,
-            description: document.getElementById("desc").value,
+            description: document.getElementById("description").value,
             assignedTo: document.getElementById("assignedTo").value,
             status: document.getElementById("status").value,
             startDate: document.getElementById("startDate").value,
@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
         };
 
         // POST isteği yaparak yeni görevi ekle
-        fetch("/tasks", {
+        fetch("/newtask", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             if (data.message === "Task added successfully.") {
                 alert("Task added successfully!");
             } else {

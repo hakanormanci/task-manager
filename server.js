@@ -6,6 +6,7 @@ const path = require("path")
 
 const filePath = "tasks.json";
 const assigneesPath = path.join(__dirname, "data", "assignees.json");
+const usersFile = path.join(__dirname, "data", "users.json");
 
 app.use(express.json());
 app.use(express.static("public"));
@@ -53,6 +54,59 @@ app.get("/assignees", (req, res) => {
     });
 });
 
+app.post("/register", (req, res) => {
+    const { username, password } = req.body;
+  
+    if (!username || !password) {
+      return res.status(400).json({ message: "Username and password are required." });
+    }
+  
+    fs.readFile(usersFile, "utf8", (err, data) => {
+      if (err && err.code !== "ENOENT") {
+        return res.status(500).json({ message: "Cannot read users file." });
+      }
+  
+      const users = data ? JSON.parse(data) : [];
+  
+      const userExists = users.find(user => user.username === username);
+      if (userExists) {
+        return res.status(400).json({ message: "Username already exists." });
+      }
+  
+      const newUser = {
+        id: Date.now(),
+        username,
+        password, // Şimdilik düz metin; ileride hash’leyeceğiz.
+        role: "user"
+      };
+  
+      users.push(newUser);
+  
+      fs.writeFile(usersFile, JSON.stringify(users, null, 2), (err) => {
+        if (err) return res.status(500).json({ message: "User cannot be saved." });
+        res.json({ message: "User registered successfully." });
+      });
+    });
+  });
+
+  app.post("/login", (req, res) => {
+    const { username, password } = req.body;
+  
+    fs.readFile(usersFile, "utf8", (err, data) => {
+      if (err) return res.status(500).json({ message: "Cannot read users file." });
+  
+      const users = JSON.parse(data);
+      const user = users.find(u => u.username === username && u.password === password);
+  
+      if (!user) {
+        return res.status(401).json({ message: "Invalid username or password." });
+      }
+  
+      res.json({ message: "Login successful", user });
+    });
+  });
+  
+
 app.get("/assignees", (req, res) => {
     fs.readFile(assigneesPath, "utf8", (err, data) => {
         if (err) {
@@ -66,7 +120,7 @@ app.get("/assignees", (req, res) => {
 
 
 
-app.get("/tasks", (req,res) => {
+app.get("/newtask", (req,res) => {
     fs.readFile("tasks.json", "utf8", (err,data) => {
         if (err) {
             return res.status(500).json({message: "File cannot be read."});
@@ -84,8 +138,7 @@ app.get("/tasks", (req,res) => {
 });
 
 // Adding a new task
-app.post("/tasks", (req, res) => {
-    console.log(req.body);  // Gönderilen veri
+app.post("/newtask", (req, res) => {
     fs.readFile(filePath, "utf8", (err, data) => {
         if (err) {
             return res.status(500).json({ message: "File cannot be read." });

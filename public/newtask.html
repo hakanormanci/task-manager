@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager - Tasks</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Create a New Task</h1>
+  <form id="taskForm">
+    <label for="title">Title:</label><br />
+    <input type="text" id="title" name="title" required /><br /><br />
+
+    <label for="description">Description:</label><br />
+    <textarea id="description" name="description" required></textarea><br /><br />
+
+    <label for="startDate">Start Date:</label><br />
+    <input type="date" id="startDate" name="startDate" required /><br /><br />
+
+    <label for="endDate">End Date:</label><br />
+    <input type="date" id="endDate" name="endDate" required /><br /><br />
+
+    <input type="hidden" id="status" value="Pending">    
+
+    <label for="assignedTo">Assigned To:</label><br />
+    <select id="assignedTo" name="assignedTo" required>
+      <option value="">Loading...</option>
+    </select><br /><br />
+
+    <button type="submit">Add Task</button>
+  </form>
+
+  <script src="script.js"></script>
+</body>
+</html>

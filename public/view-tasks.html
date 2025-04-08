@@ -1,0 +1,52 @@
+<!-- view-tasks.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - View Tasks</title>
+    <style>
+        /* Stil eklemeleri */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="newtask.html">Add New Task</a></li>
+        </ul>
+    </nav>
+    <h1>Existing Tasks</h1>
+    <table id="tasksTable">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Assigned To</th>
+                <th>Status</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Tasks will be loaded here -->
+        </tbody>
+    </table>
+
+    <script src="tasks-view.js"></script>
+</body>
+</html>
