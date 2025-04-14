@@ -3,13 +3,39 @@ const app = express();
 const PORT = 3000;
 const fs = require("fs");
 const path = require("path")
+const session = require("express-session");
+
+let username;
 
 const filePath = "tasks.json";
+//const tasksPath = path.join(__dirname, 'data', 'tasks.json');
 const assigneesPath = path.join(__dirname, "data", "assignees.json");
 const usersFile = path.join(__dirname, "data", "users.json");
 
 app.use(express.json());
+
+app.use(session({
+    secret: 'anahtar', // istediğin herhangi bir gizli kelime olabilir
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false } // HTTPS kullanmıyorsan false kalmalı
+  }));
+  
+// middlewares
+
+function isAuthenticated(req,res,next) {
+    if (req.session && req.session.user) {
+        next();
+    } else {
+        res.status(401).send("Please login to see this page.");
+    }
+}
+
 app.use(express.static("public"));
+//app.use("/protected", isAuthenticated, express.static("public"));
+app.use('/protected', isAuthenticated, express.static(path.join(__dirname, 'protected')));
+
+
 
 // get users
 app.get("/admin/users", (req, res) => {
@@ -37,20 +63,6 @@ app.post("/admin/users", (req, res) => {
             }
             res.json({ message: "User added successfully." });
         });
-    });
-});
-
-
-// assignees persons
-app.get("/assignees", (req, res) => {
-
-    fs.readFile(assigneesPath, "utf8", (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: "Could not read assignees file." });
-        }
-
-        const assignees = data.trim() ? JSON.parse(data) : [];
-        res.json(assignees);
     });
 });
 
@@ -89,21 +101,23 @@ app.post("/register", (req, res) => {
     });
   });
 
-  app.post("/login", (req, res) => {
+  app.post('/login', (req, res) => {
     const { username, password } = req.body;
   
-    fs.readFile(usersFile, "utf8", (err, data) => {
-      if (err) return res.status(500).json({ message: "Cannot read users file." });
+    const usersPath = path.join(__dirname, 'data', 'users.json');
+    const users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
   
-      const users = JSON.parse(data);
-      const user = users.find(u => u.username === username && u.password === password);
+    const user = users.find(u => u.username === username && u.password === password);
   
-      if (!user) {
-        return res.status(401).json({ message: "Invalid username or password." });
-      }
-  
-      res.json({ message: "Login successful", user });
-    });
+    if (user) {
+      req.session.user = {
+        username: user.username,
+        role: user.role // "admin", "user" ya da "superadmin"
+      };
+      res.json({ message: "Login successful", role: user.role });
+    } else {
+      res.status(401).json({ message: "Invalid credentials" });
+    }
   });
   
 
@@ -118,23 +132,27 @@ app.get("/assignees", (req, res) => {
     });
 });
 
+app.get('/protected/tasks', isAuthenticated, (req, res) => {
+    const tasks = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const currentUser = req.session.user;
+  
+    // Admin veya Superadmin ise tüm görevleri döndür
+    if (currentUser.role === 'admin' || currentUser.role === 'superadmin') {
+      return res.json(tasks);
+    }
+  
+    // Normal kullanıcıysa sadece ona atanmış görevleri döndür
+    const filteredTasks = tasks.filter(task => task.assignedTo === currentUser.username);
+    res.json(filteredTasks);
+  });
 
 
-app.get("/newtask", (req,res) => {
-    fs.readFile("tasks.json", "utf8", (err,data) => {
-        if (err) {
-            return res.status(500).json({message: "File cannot be read."});
-        }
-
-        let tasks;
-        try {
-            tasks = data.trim() ? JSON.parse(data) : [];
-        } catch (error) {
-            return res.status(500).json({message: "Invalid file format."});
-        };
-        
-        res.json(tasks);
-    });
+app.get("/me", (req,res) => {
+    if (req.session.user) {
+        res.json({ username: req.session.user.username });
+    } else {
+        res.status(401).json({message: "Not logged in"});
+    }
 });
 
 // Adding a new task
@@ -220,3 +238,4 @@ app.put("/tasks/:id", (req,res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on https://localhost/${PORT}`);
 });
+

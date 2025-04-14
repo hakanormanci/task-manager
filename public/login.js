@@ -18,7 +18,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       document.getElementById("loginMessage").textContent = "Login successful!";
       // Giriş sonrası yönlendirme (örnek)
       setTimeout(() => {
-        window.location.href = "/tasks.html";
+        window.location.href = "/protected/tasks.html";
       }, 1000);
     } else {
       document.getElementById("loginMessage").textContent = data.message;

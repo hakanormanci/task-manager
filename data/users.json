@@ -3,6 +3,24 @@
     "id": 1744142737508,
     "username": "hakan",
     "password": "123",
+    "role": "superadmin"
+  },
+  {
+    "id": 1744142737509,
+    "username": "mine",
+    "password": "123",
+    "role": "admin"
+  },
+  {
+    "id": 1744142737510,
+    "username": "Bob Smith",
+    "password": "123",
+    "role": "user"
+  },
+  {
+    "id": 1744142737511,
+    "username": "Alice Johnson",
+    "password": "123",
     "role": "user"
   }
 ]

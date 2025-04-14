@@ -1,7 +1,7 @@
 // tasks-view.js
 document.addEventListener("DOMContentLoaded", function() {
     // Görevleri çekmek için fetch isteği
-    fetch('/newtask')
+    fetch('/protected/tasks')
         .then(response => response.json())
         .then(tasks => {
             const tableBody = document.querySelector('#tasksTable tbody');
@@ -41,5 +41,23 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .catch(error => {
             console.error('Error loading tasks:', error);
+        });
+    
+    // Kullanıcı adını al ve başlığa yaz
+    fetch('/me')
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Not logged in');
+            }
+            return res.json();
+        })
+        .then(data => {
+            const titleElement = document.getElementById("pageTitle");
+            if (titleElement) {
+                titleElement.textContent = `Assigned Tasks for ${data.username}`;
+            }
+        })
+        .catch(err => {
+            console.error("User info could not be loaded", err);
         });
 });
