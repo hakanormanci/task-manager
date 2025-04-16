@@ -1,70 +1,65 @@
+// SECTION 1 (Modules)
 const express = require("express");
-const app = express();
-const PORT = 3000;
+const session = require("express-session");
 const fs = require("fs");
 const path = require("path")
-const session = require("express-session");
 
-let username;
+const app = express();
+const PORT = 3000;
 
+// SECTION 2 (Folder Paths)
 const filePath = "tasks.json";
-//const tasksPath = path.join(__dirname, 'data', 'tasks.json');
-const assigneesPath = path.join(__dirname, "data", "assignees.json");
 const usersFile = path.join(__dirname, "data", "users.json");
+const assigneesPath = path.join(__dirname, "data", "assignees.json");
 
+// SECTION 3 (Middleware Settings)
 app.use(express.json());
 
 app.use(session({
     secret: 'anahtar', // istediğin herhangi bir gizli kelime olabilir
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false } // HTTPS kullanmıyorsan false kalmalı
+    cookie: { secure: false }, // Because of HTTP, if we were on HTTPS it would be true
+    maxAge: 1000 * 60 * 60 * 24 // 24 saat boyunca geçerli
   }));
   
-// middlewares
-
+// SECTION 4 (Custom Middlware Functions)
 function isAuthenticated(req,res,next) {
     if (req.session && req.session.user) {
         next();
     } else {
-        res.status(401).send("Please login to see this page.");
+        return res.status(401).sendFile(path.join(__dirname, "public", "login-required.html"));
     }
 }
 
+function isAdminOrSuperadmin(req,res,next) {
+    const user = req.session.user
+    if (user.role === 'admin' || user.role === 'superadmin') {
+        next();
+    } else {
+        return res.status(403).sendFile(path.join(__dirname, "public", "unauthorized.html"));
+    }
+}
+
+// SECTION 5 (Static Folders)
 app.use(express.static("public"));
-//app.use("/protected", isAuthenticated, express.static("public"));
-app.use('/protected', isAuthenticated, express.static(path.join(__dirname, 'protected')));
+//app.use("/protected", isAuthenticated, express.static(path.join(__dirname, "protected"))); Wthis line is activated, all users can access the pages under protected folder!!!
 
 
-
-// get users
-app.get("/admin/users", (req, res) => {
-    fs.readFile(assigneesPath, "utf8", (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: "Cannot read users data." });
-        }
-        const users = data ? JSON.parse(data) : [];
-        res.json({ users });
-    });
+// SECTION 6 (HTML Routes)
+app.get("/", (req,res) => {
+    res.sendFile(path.join(__dirname,"public", "index.html"));
 });
 
-// add new user
-app.post("/admin/users", (req, res) => {
-    const { name } = req.body;
-    fs.readFile(assigneesPath, "utf8", (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: "Cannot read users data." });
-        }
-        const users = data ? JSON.parse(data) : [];
-        users.push({ name });
-        fs.writeFile(assigneesPath, JSON.stringify(users, null, 2), (error) => {
-            if (error) {
-                return res.status(500).json({ message: "Cannot save user." });
-            }
-            res.json({ message: "User added successfully." });
-        });
-    });
+app.get("/protected/tasks.html", isAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, "protected", "tasks.html"));
+  });
+
+app.get("/protected/view-tasks.html", isAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, "protected", "view-tasks.html"));
 });
+
+// SECTION 7 (API Routes)
 
 app.post("/register", (req, res) => {
     const { username, password } = req.body;
@@ -119,6 +114,69 @@ app.post("/register", (req, res) => {
       res.status(401).json({ message: "Invalid credentials" });
     }
   });
+
+app.get("/logout", (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+        return res.status(500).send("Logout failed");
+        }
+        res.redirect("/login.html");
+    });
+});
+
+app.post("/logout", (req,res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).send("Logout failed.");
+        }
+        res.clearCookie("connect.sid");
+        res.json({message: "Logged out succesfully."})
+        //res.redirect("/");
+    });
+});
+
+//get username
+app.get("/get-current-user", (req,res) => {
+    if (req.session && req.session.user) {
+        res.json({user: req.session.user});
+    } else {
+        res.status(401).json({message: "Not logged in."});
+    }
+});
+  
+
+// get users
+app.get("/admin/users", (req, res) => {
+    fs.readFile(assigneesPath, "utf8", (err, data) => {
+        if (err) {
+            return res.status(500).json({ message: "Cannot read users data." });
+        }
+        const users = data ? JSON.parse(data) : [];
+        res.json({ users });
+    });
+});
+
+// add new user
+app.post("/admin/users", (req, res) => {
+    const { name } = req.body;
+    fs.readFile(assigneesPath, "utf8", (err, data) => {
+        if (err) {
+            return res.status(500).json({ message: "Cannot read users data." });
+        }
+        const users = data ? JSON.parse(data) : [];
+        users.push({ name });
+        fs.writeFile(assigneesPath, JSON.stringify(users, null, 2), (error) => {
+            if (error) {
+                return res.status(500).json({ message: "Cannot save user." });
+            }
+            res.json({ message: "User added successfully." });
+        });
+    });
+});
+
+
+
+  
   
 
 app.get("/assignees", (req, res) => {
@@ -131,6 +189,11 @@ app.get("/assignees", (req, res) => {
         res.json(assignees);
     });
 });
+
+
+
+  
+  
 
 app.get('/protected/tasks', isAuthenticated, (req, res) => {
     const tasks = JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -146,6 +209,8 @@ app.get('/protected/tasks', isAuthenticated, (req, res) => {
     res.json(filteredTasks);
   });
 
+  
+  
 
 app.get("/me", (req,res) => {
     if (req.session.user) {
@@ -155,8 +220,14 @@ app.get("/me", (req,res) => {
     }
 });
 
+
+app.get("/protected/newtask.html", isAuthenticated, isAdminOrSuperadmin, (req, res) => {
+    res.sendFile(path.join(__dirname, "protected", "newtask.html"));
+  });
+  
+
 // Adding a new task
-app.post("/newtask", (req, res) => {
+app.post("/newtask",isAuthenticated, isAdminOrSuperadmin, (req, res) => {
     fs.readFile(filePath, "utf8", (err, data) => {
         if (err) {
             return res.status(500).json({ message: "File cannot be read." });
@@ -178,6 +249,7 @@ app.post("/newtask", (req, res) => {
         });
     });
 });
+
 
 //Delete a task
 app.delete("/tasks/:id", (req,res) => {
